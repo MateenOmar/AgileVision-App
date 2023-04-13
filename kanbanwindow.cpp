@@ -14,14 +14,7 @@ Kanbanwindow::Kanbanwindow(QWidget *parent) :
     db2.setPassword("831Project");
     db2.setDatabaseName("AgileVisionDB");
     db2.open();
-    QSqlQuery qry;
-    qry.exec("SELECT * FROM Users");
-    while (qry.next()){
-                qDebug() << qry.value(0);
-                qDebug() << qry.value(1);
-            }
     db2.close();
-
     select_sql();
 }
 
@@ -30,7 +23,35 @@ Kanbanwindow::~Kanbanwindow()
     delete ui;
 }
 
+void Kanbanwindow::close_sql(){
 
+    for(int i = 0; i < ui->BacklogList->count(); i++){
+        update_close_sql(ui->BacklogList->item(i)->text(), "BacklogList");
+    }
+    for(int i = 0; i < ui->InProgressList->count(); i++){
+        update_close_sql(ui->InProgressList->item(i)->text(), "InProgressList");
+    }
+    for(int i = 0; i < ui->InReviewList->count(); i++){
+        update_close_sql(ui->InReviewList->item(i)->text(), "InReviewList");
+    }
+    for(int i = 0; i < ui->DoneList->count(); i++){
+        update_close_sql(ui->DoneList->item(i)->text(), "DoneList");
+    }
+}
+
+void Kanbanwindow::update_close_sql(QString tname, QString column){
+    db2.open();
+    QSqlDatabase::database().transaction();
+    QSqlQuery qry_update(db2);
+    qry_update.prepare("UPDATE Tasks SET tcolumn=? WHERE tname=?");
+    qry_update.addBindValue(column);
+    qry_update.addBindValue(tname);
+    if (!qry_update.exec()){
+        qDebug() << qry_update.lastError();
+    }
+    QSqlDatabase::database().commit();
+    db2.close();
+}
 
 void Kanbanwindow::insert_sql(QString tname, QString desc, QString column, QString pname) {
     db2.open();
@@ -71,17 +92,15 @@ void Kanbanwindow::select_sql() {
     QSqlQuery qry_select(db2);
     if (qry_select.exec("SELECT * FROM Tasks;")){
         while(qry_select.next()){
-            if (qry_select.value(0) == "BacklogList"){
+            if (qry_select.value(2).toString() == "BacklogList"){
                 ui->BacklogList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "InProgressList"){
+            } else if(qry_select.value(2).toString() == "InProgressList"){
                 ui->InProgressList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "InReviewList"){
+            } else if(qry_select.value(2).toString() == "InReviewList"){
                 ui->InReviewList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "DoneList"){
+            } else if(qry_select.value(2).toString() == "DoneList"){
                 ui->DoneList->addItem(qry_select.value(0).toString());
             }
-//            ui->BacklogList->addItem(qry_select.value(0).toString());
-//            qDebug() << qry_select.value(0).toString();
         }
 
     }
@@ -118,7 +137,15 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
     TextEdit_1->setGeometry(150,70,150,100);
     TextEdit_1->setParent(dialog);
     if (column != "new"){
-        //select
+        db2.open();
+        QSqlQuery qry_select(db2);
+        qry_select.prepare("SELECT * FROM Tasks WHERE tname=?;");
+        qry_select.addBindValue(item->text());
+        qry_select.exec();
+        while(qry_select.next()){
+            TextEdit_1->setText(qry_select.value(1).toString());
+        }
+        db2.close();
     }
     TextEdit_1->show();
 
@@ -132,7 +159,6 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
     if (dialog->exec() == QDialog::Accepted){
         if (column == "new"){
             insert_sql(LineEdit_1->text(), TextEdit_1->toPlainText(), "BacklogList", "831 Project");
-            //select_sql();
         } else {
             update_sql(item->text(), TextEdit_1->toPlainText(), column, "831 Project", LineEdit_1->text());
         }
@@ -176,5 +202,12 @@ void Kanbanwindow::on_addTask_clicked()
     item->setText("");
     item->setText(update_item(item, "new").text());
     ui->BacklogList->addItem(item);
+}
+
+
+void Kanbanwindow::on_saveButton_clicked()
+{
+    close_sql();
+    QMessageBox::information(this, "Saved Changes", "All changes made in the software are now saved.");
 }
 
