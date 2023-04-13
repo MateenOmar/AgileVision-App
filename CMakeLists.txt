@@ -21,6 +21,9 @@ set(PROJECT_SOURCES
         projectswindow.h
         mainwindow.ui
         projectswindow.ui
+        kanbanwindow.h
+        kanbanwindow.cpp
+        kanbanwindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

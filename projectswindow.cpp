@@ -14,3 +14,11 @@ ProjectsWindow::~ProjectsWindow()
 }
 
 
+
+void ProjectsWindow::on_projectOpenBtn_1_clicked()
+{
+    Kanbanwindow *nw = new Kanbanwindow();
+    this->hide();
+    nw->show();
+}
+
