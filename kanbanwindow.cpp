@@ -211,3 +211,13 @@ void Kanbanwindow::on_saveButton_clicked()
     QMessageBox::information(this, "Saved Changes", "All changes made in the software are now saved.");
 }
 
+
+void Kanbanwindow::on_refreshButton_clicked()
+{
+    ui->BacklogList->clear();
+    ui->InProgressList->clear();
+    ui->InReviewList->clear();
+    ui->DoneList->clear();
+    select_sql();
+}
+

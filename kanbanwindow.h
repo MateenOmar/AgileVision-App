@@ -50,6 +50,8 @@ private slots:
 
     void on_saveButton_clicked();
 
+    void on_refreshButton_clicked();
+
 private:
     Ui::Kanbanwindow *ui;
     QDialog *dialog;
