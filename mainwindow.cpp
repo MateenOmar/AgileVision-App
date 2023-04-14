@@ -3,7 +3,6 @@
 #include "./ui_mainwindow.h"
 
 #include <QMenuBar>
-//QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
@@ -12,11 +11,12 @@ MainWindow::MainWindow(QWidget *parent):
     ui->setupUi(this);
     this->setCentralWidget(ui->centralwidget);
 
-//    db.setHostName("34.30.253.140");
-//    db.setUserName("root");
-//    db.setPassword("831Project");
-//    db.setDatabaseName("AgileVisionDB");
-//    db.close();
+    db = QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("34.30.253.140");
+    db.setUserName("root");
+    db.setPassword("831Project");
+    db.setDatabaseName("AgileVisionDB");
+    db.close();
 
 }
 
@@ -28,51 +28,52 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_loginButton_clicked()
 {
-//    QString emailText = ui->emailInput->text().trimmed();
-//    QString passwordText = ui->passwordInput->text().trimmed();
+    QString emailText = ui->emailInput->text().trimmed();
+    QString passwordText = ui->passwordInput->text().trimmed();
 
-//    QSqlQuery qry;
+    QSqlQuery qry;
 
-//    if (db.open()) {
-//        if (qry.exec("SELECT * FROM Users WHERE email=\'" + emailText + "\' AND password=\'" + passwordText + "\'")){
-//            QSqlDatabase::removeDatabase("AgileVisionDB");
-            QMainWindow *nw = new ProjectsWindow();
+    if (db.open()) {
+        qry.prepare("SELECT * FROM Users WHERE email=\'" + emailText + "\' AND password=\'" + passwordText + "\'");
+        qry.exec();
+
+        if (qry.next()){
+            QSqlDatabase::removeDatabase(db.connectionName());
+            QMainWindow *nw = new ProjectsWindow(nullptr, emailText);
             this->hide();
             nw->show();
-//        }
-//        else {
-//            db.close();
-//            ui->errorText->setText("Incorrect Email or Password.");
-//            ui->errorText->setStyleSheet("QLabel { color : red; }");
-//        }
-//    }
-//    else {
-//        db.close();
-//        QMessageBox::information(this, "Not Connected", "DB Not Connnected");
-//    }
+        }
+        else {
+            ui->errorText->setText("Incorrect Email or Password.");
+            ui->errorText->setStyleSheet("QLabel { color : red; }");
+        }
+    }
+    else {
+        QMessageBox::information(this, "Not Connected", "DB Not Connnected");
+    }
 
-//    db.close();
+    db.close();
 }
 
 
 void MainWindow::on_signupButton_clicked()
 {
-//    if(db.open()) {
-//        QMessageBox::information(this, "Connection", "DB Connnected");
+    if(db.open()) {
+        QMessageBox::information(this, "Connection", "DB Connnected");
 
-//        QSqlQuery qry;
+        QSqlQuery qry;
 
-//        if(qry.exec("SELECT * FROM Users;")){
-//            while(qry.next()){
-//                qDebug () << qry.value(0).toString();
-//                qDebug () << qry.value(1).toString();
-//            }
-//        }
-//    }
-//    else {
-//        QMessageBox::information(this, "Not Connected", "DB Not Connnected");
-//    }
+        if(qry.exec("SELECT * FROM Users;")){
+            while(qry.next()){
+                qDebug () << qry.value(0).toString();
+                qDebug () << qry.value(1).toString();
+            }
+        }
+    }
+    else {
+        QMessageBox::information(this, "Not Connected", "DB Not Connnected");
+    }
 
-//    db.close();
+    db.close();
 }
 

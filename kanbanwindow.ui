@@ -16,10 +16,10 @@
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
+     <x>0</x>
+     <y>0</y>
      <width>1601</width>
-     <height>901</height>
+     <height>921</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -306,32 +306,6 @@
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="saveButton">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>800</y>
-       <width>121</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Save Changes</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="refreshButton">
-     <property name="geometry">
-      <rect>
-       <x>920</x>
-       <y>790</y>
-       <width>121</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Refresh</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QWidget" name="Sprint">
     <attribute name="title">
@@ -342,6 +316,48 @@
     <attribute name="title">
      <string>Chat Page</string>
     </attribute>
+    <widget class="QTextEdit" name="messagesText">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>30</y>
+       <width>1221</width>
+       <height>701</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>750</y>
+       <width>1211</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="message">
+        <property name="text">
+         <string>Message:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="messageText"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="sendButton">
+        <property name="text">
+         <string>Send</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
   </widget>
  </widget>

@@ -87,19 +87,6 @@
           <string>Project Name</string>
          </property>
         </widget>
-        <widget class="QLabel" name="projectProgress_1">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>60</y>
-           <width>201</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Progress</string>
-         </property>
-        </widget>
         <widget class="QPushButton" name="projectOpenBtn_1">
          <property name="geometry">
           <rect>
@@ -151,19 +138,6 @@
           <string>Project Name</string>
          </property>
         </widget>
-        <widget class="QLabel" name="projectProgress_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>60</y>
-           <width>201</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Progress</string>
-         </property>
-        </widget>
         <widget class="QPushButton" name="projectOpenBtn_2">
          <property name="geometry">
           <rect>
@@ -213,19 +187,6 @@
          </property>
          <property name="text">
           <string>Project Name</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="projectProgress_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>60</y>
-           <width>201</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Progress</string>
          </property>
         </widget>
         <widget class="QPushButton" name="projectOpenBtn_3">

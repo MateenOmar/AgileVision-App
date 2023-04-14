@@ -17,12 +17,14 @@ namespace Ui {
 class Kanbanwindow;
 }
 
+class QTcpSocket;
+
 class Kanbanwindow : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit Kanbanwindow(QWidget *parent = nullptr);
+    explicit Kanbanwindow(QWidget *parent = nullptr, QString userEmail = nullptr, QString projectName = nullptr);
     ~Kanbanwindow();
 
 private slots:
@@ -34,10 +36,6 @@ private slots:
 
     void select_sql();
 
-    void close_sql();
-
-    void update_close_sql(QString tname, QString column);
-
     void on_DoneList_itemDoubleClicked(QListWidgetItem *item);
 
     void on_InReviewList_itemDoubleClicked(QListWidgetItem *item);
@@ -48,15 +46,18 @@ private slots:
 
     void on_addTask_clicked();
 
-    void on_saveButton_clicked();
+    void on_sendButton_clicked();
 
-    void on_refreshButton_clicked();
+    void setupServerConnection();
 
 private:
     Ui::Kanbanwindow *ui;
     QDialog *dialog;
     QSqlDatabase db2;
-
+    QTcpSocket *socket;
+    QString userEmail;
+    QString userFullName;
+    QString projectName;
 };
 
 #endif // KANBANWINDOW_H
