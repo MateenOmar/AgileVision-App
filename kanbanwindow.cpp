@@ -109,7 +109,7 @@ void Kanbanwindow::update_sql(QString tname, QString desc, QString column, QStri
 void Kanbanwindow::select_sql() {
     db2.open();
     QSqlQuery qry_select(db2);
-    if (qry_select.exec("SELECT * FROM Tasks;")){
+    if (qry_select.exec("SELECT * FROM Tasks WHERE pname=\'" + projectName + "\';")){
         while(qry_select.next()){
             if (qry_select.value(2) == "BacklogList"){
                 ui->BacklogList->addItem(qry_select.value(0).toString());
@@ -207,9 +207,9 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
 
     if (dialog->exec() == QDialog::Accepted){
         if (column == "new"){
-            insert_sql(LineEdit_1->text(), TextEdit_1->toPlainText(), "BacklogList", "831 Project");
+            insert_sql(LineEdit_1->text(), TextEdit_1->toPlainText(), "BacklogList", projectName);
         } else {
-            update_sql(item->text(), TextEdit_1->toPlainText(), column, "831 Project", LineEdit_1->text());
+            update_sql(item->text(), TextEdit_1->toPlainText(), column, projectName, LineEdit_1->text());
         }
         item->setText(LineEdit_1->text());
 
@@ -313,7 +313,7 @@ void Kanbanwindow::on_sprint1Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 1, "831 project");
+    insert_sprint(item->text(), 1, projectName);
     ui->sprint1List->addItem(item);
     ui->BacklogList->addItem(item);
 }
@@ -323,7 +323,7 @@ void Kanbanwindow::on_sprint2Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 2, "831 project");
+    insert_sprint(item->text(), 2, projectName);
     ui->sprint2List->addItem(item);
     ui->BacklogList->addItem(item);
 }
@@ -333,7 +333,7 @@ void Kanbanwindow::on_sprint3Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 3, "831 project");
+    insert_sprint(item->text(), 3, projectName);
     ui->sprint3List->addItem(item);
     ui->BacklogList->addItem(item);
 }
@@ -356,7 +356,7 @@ void Kanbanwindow::insert_sprint(QString tname, int snum, QString pname){
 void Kanbanwindow::select_sprint(){
     db2.open();
     QSqlQuery qry_select(db2);
-    if (qry_select.exec("SELECT * FROM Sprints;")){
+    if (qry_select.exec("SELECT * FROM Sprints WHERE pname=\'" + projectName + "\';")){
         while(qry_select.next()){
             if (qry_select.value(1) == 1){
                 ui->sprint1List->addItem(qry_select.value(0).toString());
@@ -442,7 +442,7 @@ void Kanbanwindow::on_addIssue_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_Issues(item->text(), "", "831 Project", "no");
+    insert_Issues(item->text(), "", projectName, "no");
     ui->newIssueList->addItem(item);
     ui->BacklogList->addItem(item);
 }
@@ -450,7 +450,7 @@ void Kanbanwindow::on_addIssue_clicked()
 void Kanbanwindow::select_Issues(){
     db2.open();
     QSqlQuery qry_select(db2);
-    if (qry_select.exec("SELECT * FROM Issues;")){
+    if (qry_select.exec("SELECT * FROM Issues WHERE pname=\'" + projectName + "\';")){
         while(qry_select.next()){
             if (qry_select.value(3) == "yes"){
                 ui->completedIssueList->addItem(qry_select.value(0).toString());
