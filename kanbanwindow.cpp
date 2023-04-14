@@ -4,7 +4,6 @@
 #include <QTextStream>
 
 
-
 Kanbanwindow::Kanbanwindow(QWidget *parent, QString userEmail, QString projectName) :
     QDialog(parent),
     ui(new Ui::Kanbanwindow)
@@ -42,14 +41,13 @@ Kanbanwindow::Kanbanwindow(QWidget *parent, QString userEmail, QString projectNa
     });
 
     setupServerConnection();
+
 }
 
 Kanbanwindow::~Kanbanwindow()
 {
     delete ui;
 }
-
-
 
 void Kanbanwindow::insert_sql(QString tname, QString desc, QString column, QString pname) {
     db2.open();
@@ -82,6 +80,29 @@ void Kanbanwindow::update_sql(QString tname, QString desc, QString column, QStri
     }
     QSqlDatabase::database().commit();
     db2.close();
+    db2.open();
+    QSqlDatabase::database().transaction();
+    QSqlQuery qry_update2(db2);
+    qry_update2.prepare("UPDATE Issues SET tname=? WHERE tname=?");
+    qry_update2.addBindValue(newtname);
+    qry_update2.addBindValue(tname);
+    if (!qry_update2.exec()){
+        qDebug() << qry_update2.lastError();
+    }
+    QSqlDatabase::database().commit();
+    db2.close();
+    db2.open();
+    QSqlDatabase::database().transaction();
+    QSqlQuery qry_update3(db2);
+    qry_update3.prepare("UPDATE Sprints SET tname=? WHERE tname=?");
+    qry_update3.addBindValue(newtname);
+    qry_update3.addBindValue(tname);
+    if (!qry_update3.exec()){
+        qDebug() << qry_update3.lastError();
+    }
+    QSqlDatabase::database().commit();
+    db2.close();
+
 
 }
 
@@ -202,25 +223,26 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
 void Kanbanwindow::on_DoneList_itemDoubleClicked(QListWidgetItem *item)
 {
     item->setText(update_item(item, "DoneList").text());
+    refresh_all();
 }
 
 void Kanbanwindow::on_InReviewList_itemDoubleClicked(QListWidgetItem *item)
 {
     item->setText(update_item(item, "InReviewList").text());
+    refresh_all();
 }
-
 
 void Kanbanwindow::on_InProgressList_itemDoubleClicked(QListWidgetItem *item)
 {
     item->setText(update_item(item, "InProgressList").text());
+    refresh_all();
 }
-
 
 void Kanbanwindow::on_BacklogList_itemDoubleClicked(QListWidgetItem *item)
 {
     item->setText(update_item(item, "BacklogList").text());
+    refresh_all();
 }
-
 
 void Kanbanwindow::on_addTask_clicked()
 {
@@ -230,6 +252,22 @@ void Kanbanwindow::on_addTask_clicked()
     ui->BacklogList->addItem(item);
 }
 
+void Kanbanwindow::refresh_all(){
+    ui->newIssueList->clear();
+    ui->completedIssueList->clear();
+    select_Issues();
+
+    ui->sprint1List->clear();
+    ui->sprint2List->clear();
+    ui->sprint3List->clear();
+    select_sprint();
+
+    ui->BacklogList->clear();
+    ui->InProgressList->clear();
+    ui->InReviewList->clear();
+    ui->DoneList->clear();
+    select_sql();
+}
 
 void Kanbanwindow::on_sendButton_clicked() {
     QTextStream T(socket);
@@ -255,13 +293,11 @@ void Kanbanwindow::setupServerConnection() {
     socket->connectToHost(hostAddress, port);
 }
 
-
 void Kanbanwindow::on_saveButton_clicked()
 {
     close_sql();
     QMessageBox::information(this, "Saved Changes", "All changes made in the software are now saved.");
 }
-
 
 void Kanbanwindow::on_refreshButton_clicked()
 {
@@ -271,7 +307,6 @@ void Kanbanwindow::on_refreshButton_clicked()
     ui->DoneList->clear();
     select_sql();
 }
-
 
 void Kanbanwindow::on_sprint1Button_clicked()
 {
@@ -283,7 +318,6 @@ void Kanbanwindow::on_sprint1Button_clicked()
     ui->BacklogList->addItem(item);
 }
 
-
 void Kanbanwindow::on_sprint2Button_clicked()
 {
     QListWidgetItem *item = new QListWidgetItem();
@@ -293,7 +327,6 @@ void Kanbanwindow::on_sprint2Button_clicked()
     ui->sprint2List->addItem(item);
     ui->BacklogList->addItem(item);
 }
-
 
 void Kanbanwindow::on_sprint3Button_clicked()
 {
@@ -338,8 +371,6 @@ void Kanbanwindow::select_sprint(){
     db2.close();
 }
 
-
-
 void Kanbanwindow::on_commentButton_clicked()
 {
     QString comment = ui->issueLine->text();
@@ -376,7 +407,6 @@ void Kanbanwindow::on_commentButton_clicked()
 
 }
 
-
 void Kanbanwindow::on_newIssueList_itemDoubleClicked(QListWidgetItem *item)
 {
     ui->issueLabel->setText(item->text());
@@ -392,7 +422,6 @@ void Kanbanwindow::on_newIssueList_itemDoubleClicked(QListWidgetItem *item)
     db2.close();
 }
 
-
 void Kanbanwindow::on_completedIssueList_itemDoubleClicked(QListWidgetItem *item)
 {
     ui->issueLabel->setText(item->text());
@@ -407,7 +436,6 @@ void Kanbanwindow::on_completedIssueList_itemDoubleClicked(QListWidgetItem *item
     }
     db2.close();
 }
-
 
 void Kanbanwindow::on_addIssue_clicked()
 {
@@ -479,7 +507,6 @@ void Kanbanwindow::on_saveIssuesButton_clicked()
     save_Issues();
     QMessageBox::information(this, "Saved Changes", "All changes made in the software are now saved.");
 }
-
 
 void Kanbanwindow::on_refreshIssues_clicked()
 {

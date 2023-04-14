@@ -87,6 +87,8 @@ private slots:
 
     void on_refreshIssues_clicked();
 
+    void refresh_all();
+
 private:
     Ui::Kanbanwindow *ui;
     QDialog *dialog;
