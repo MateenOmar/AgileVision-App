@@ -86,20 +86,48 @@ void Kanbanwindow::select_sql() {
     QSqlQuery qry_select(db2);
     if (qry_select.exec("SELECT * FROM Tasks;")){
         while(qry_select.next()){
-            if (qry_select.value(0) == "BacklogList"){
+            if (qry_select.value(2) == "BacklogList"){
                 ui->BacklogList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "InProgressList"){
+            } else if(qry_select.value(2) == "InProgressList"){
                 ui->InProgressList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "InReviewList"){
+            } else if(qry_select.value(2) == "InReviewList"){
                 ui->InReviewList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(0) == "DoneList"){
+            } else if(qry_select.value(2) == "DoneList"){
                 ui->DoneList->addItem(qry_select.value(0).toString());
             }
-//            ui->BacklogList->addItem(qry_select.value(0).toString());
-//            qDebug() << qry_select.value(0).toString();
         }
 
     }
+    db2.close();
+}
+
+void Kanbanwindow::close_sql(){
+
+    for(int i = 0; i < ui->BacklogList->count(); i++){
+        update_close_sql(ui->BacklogList->item(i)->text(), "BacklogList");
+    }
+    for(int i = 0; i < ui->InProgressList->count(); i++){
+        update_close_sql(ui->InProgressList->item(i)->text(), "InProgressList");
+    }
+    for(int i = 0; i < ui->InReviewList->count(); i++){
+        update_close_sql(ui->InReviewList->item(i)->text(), "InReviewList");
+    }
+    for(int i = 0; i < ui->DoneList->count(); i++){
+        update_close_sql(ui->DoneList->item(i)->text(), "DoneList");
+    }
+}
+
+void Kanbanwindow::update_close_sql(QString tname, QString column){
+    db2.open();
+    QSqlDatabase::database().transaction();
+    QSqlQuery qry_update(db2);
+    qry_update.prepare("UPDATE Tasks SET tcolumn=? WHERE tname=?");
+    qry_update.addBindValue(column);
+    qry_update.addBindValue(tname);
+    if (!qry_update.exec()){
+        qDebug() << qry_update.lastError();
+    }
+    QSqlDatabase::database().commit();
     db2.close();
 }
 
@@ -216,5 +244,22 @@ void Kanbanwindow::setupServerConnection() {
     quint16 port = 3333;
 
     socket->connectToHost(hostAddress, port);
+}
+
+
+void Kanbanwindow::on_saveButton_clicked()
+{
+    close_sql();
+    QMessageBox::information(this, "Saved Changes", "All changes made in the software are now saved.");
+}
+
+
+void Kanbanwindow::on_refreshButton_clicked()
+{
+    ui->BacklogList->clear();
+    ui->InProgressList->clear();
+    ui->InReviewList->clear();
+    ui->DoneList->clear();
+    select_sql();
 }
 

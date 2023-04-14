@@ -36,6 +36,10 @@ private slots:
 
     void select_sql();
 
+    void close_sql();
+
+    void update_close_sql(QString tname, QString column);
+
     void on_DoneList_itemDoubleClicked(QListWidgetItem *item);
 
     void on_InReviewList_itemDoubleClicked(QListWidgetItem *item);
@@ -49,6 +53,10 @@ private slots:
     void on_sendButton_clicked();
 
     void setupServerConnection();
+
+    void on_saveButton_clicked();
+
+    void on_refreshButton_clicked();
 
 private:
     Ui::Kanbanwindow *ui;
