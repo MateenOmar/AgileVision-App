@@ -58,6 +58,37 @@ private slots:
 
     void on_refreshButton_clicked();
 
+    void on_sprint1Button_clicked();
+
+    void on_sprint2Button_clicked();
+
+    void on_sprint3Button_clicked();
+
+    void insert_sprint(QString tname, int snum, QString pname);
+    void select_sprint();
+
+
+    void on_commentButton_clicked();
+
+    void on_newIssueList_itemDoubleClicked(QListWidgetItem *item);
+
+    void on_completedIssueList_itemDoubleClicked(QListWidgetItem *item);
+
+    void on_addIssue_clicked();
+
+    void select_Issues();
+    void insert_Issues(QString tname, QString icomment, QString pname, QString icomplete);
+
+    void on_saveIssuesButton_clicked();
+
+    void save_Issues();
+
+    void update_save_Issues(QString tname, QString icomplete);
+
+    void on_refreshIssues_clicked();
+
+    void refresh_all();
+
 private:
     Ui::Kanbanwindow *ui;
     QDialog *dialog;
