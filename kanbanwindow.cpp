@@ -1,4 +1,5 @@
 #include "kanbanwindow.h"
+#include "projectswindow.h"
 #include "ui_kanbanwindow.h"
 #include <QTcpSocket>
 #include <QTextStream>
@@ -513,5 +514,14 @@ void Kanbanwindow::on_refreshIssues_clicked()
     ui->newIssueList->clear();
     ui->completedIssueList->clear();
     select_Issues();
+}
+
+
+void Kanbanwindow::on_pushButton_clicked()
+{
+    socket->disconnectFromHost();
+    QMainWindow *nw = new ProjectsWindow(nullptr, userEmail);
+    this->hide();
+    nw->show();
 }
 

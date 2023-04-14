@@ -89,6 +89,8 @@ private slots:
 
     void refresh_all();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::Kanbanwindow *ui;
     QDialog *dialog;

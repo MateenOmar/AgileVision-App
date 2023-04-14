@@ -28,7 +28,7 @@
     </font>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="Issue">
     <attribute name="title">
@@ -747,6 +747,19 @@ QListWidget:Item:selected
      </property>
      <property name="text">
       <string>Refresh</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>51</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>back</string>
      </property>
     </widget>
    </widget>
