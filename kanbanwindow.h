@@ -11,6 +11,9 @@
 #include <QtSql>
 #include <QSqlDatabase>
 #include <QMessageBox>
+#include <QTcpSocket>
+#include <QTextStream>
+#include <QComboBox>
 #include "mainwindow.h"
 
 namespace Ui {
@@ -30,9 +33,9 @@ public:
 private slots:
     QListWidgetItem update_item(QListWidgetItem *item, QString column);
 
-    void insert_sql(QString tname, QString desc, QString column, QString pname);
+    void insert_sql(QString tname, QString desc, QString column, QString pname, QString iname);
 
-    void update_sql(QString tname, QString desc, QString column, QString pname, QString newtname);
+    void update_sql(QString tname, QString desc, QString column, QString pname, QString iname, QString newtname);
 
     void select_sql();
 
@@ -77,7 +80,7 @@ private slots:
     void on_addIssue_clicked();
 
     void select_Issues();
-    void insert_Issues(QString tname, QString icomment, QString pname, QString icomplete);
+    void insert_Issues(QString iname, QString icomment, QString icomplete, QString pname);
 
     void on_saveIssuesButton_clicked();
 

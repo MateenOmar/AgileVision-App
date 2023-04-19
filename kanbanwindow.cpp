@@ -1,8 +1,7 @@
 #include "kanbanwindow.h"
 #include "projectswindow.h"
 #include "ui_kanbanwindow.h"
-#include <QTcpSocket>
-#include <QTextStream>
+
 
 
 Kanbanwindow::Kanbanwindow(QWidget *parent, QString userEmail, QString projectName) :
@@ -50,15 +49,16 @@ Kanbanwindow::~Kanbanwindow()
     delete ui;
 }
 
-void Kanbanwindow::insert_sql(QString tname, QString desc, QString column, QString pname) {
+void Kanbanwindow::insert_sql(QString tname, QString desc, QString column, QString pname, QString iname) {
     db2.open();
     QSqlDatabase::database().transaction();
     QSqlQuery qry_insert(db2);
-    qry_insert.prepare("INSERT INTO Tasks (tname,tdesc,tcolumn,pname) VALUES (?,?,?,?)");
+    qry_insert.prepare("INSERT INTO Tasks (tname,tdesc,tcolumn,pname,iname) VALUES (?,?,?,?,?)");
     qry_insert.addBindValue(tname);
     qry_insert.addBindValue(desc);
     qry_insert.addBindValue(column);
     qry_insert.addBindValue(pname);
+    qry_insert.addBindValue(iname);
     if (!qry_insert.exec()){
         qDebug() << qry_insert.lastError();
     }
@@ -66,29 +66,19 @@ void Kanbanwindow::insert_sql(QString tname, QString desc, QString column, QStri
     db2.close();
 }
 
-void Kanbanwindow::update_sql(QString tname, QString desc, QString column, QString pname, QString newtname) {
+void Kanbanwindow::update_sql(QString tname, QString desc, QString column, QString pname, QString iname, QString newtname) {
     db2.open();
     QSqlDatabase::database().transaction();
     QSqlQuery qry_update(db2);
-    qry_update.prepare("UPDATE Tasks SET tname=?,tdesc=?,tcolumn=?,pname=? WHERE tname=?");
+    qry_update.prepare("UPDATE Tasks SET tname=?,tdesc=?,tcolumn=?,pname=?,iname=? WHERE tname=?");
     qry_update.addBindValue(newtname);
     qry_update.addBindValue(desc);
     qry_update.addBindValue(column);
     qry_update.addBindValue(pname);
+    qry_update.addBindValue(iname);
     qry_update.addBindValue(tname);
     if (!qry_update.exec()){
         qDebug() << qry_update.lastError();
-    }
-    QSqlDatabase::database().commit();
-    db2.close();
-    db2.open();
-    QSqlDatabase::database().transaction();
-    QSqlQuery qry_update2(db2);
-    qry_update2.prepare("UPDATE Issues SET tname=? WHERE tname=?");
-    qry_update2.addBindValue(newtname);
-    qry_update2.addBindValue(tname);
-    if (!qry_update2.exec()){
-        qDebug() << qry_update2.lastError();
     }
     QSqlDatabase::database().commit();
     db2.close();
@@ -161,6 +151,7 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
 
     dialog = new QDialog();
     dialog->setWindowModality(Qt::WindowModality::ApplicationModal);
+    dialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);;
     dialog->setMinimumHeight(480);
     dialog->setMinimumWidth(640);
 
@@ -197,7 +188,50 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
         }
         db2.close();
     }
-    TextEdit_1->show();
+    if (column == "issue"){
+        TextEdit_1->hide();
+    }else{
+        TextEdit_1->show();
+    }
+
+    QLabel *Label_3 = new QLabel();
+    Label_3->setText("Issue :");
+    Label_3->setGeometry(10,200,150,50);
+    Label_3->setParent(dialog);
+    Label_3->show();
+
+    QComboBox *ComboBox_1 = new QComboBox();
+    ComboBox_1->setGeometry(150,200,150,50);
+    ComboBox_1->setParent(dialog);
+    ComboBox_1->addItem("");
+    if(column != "issue"){
+        db2.open();
+        QSqlQuery qry_select2(db2);
+        qry_select2.prepare("SELECT * FROM Issues;");
+        qry_select2.exec();
+        while(qry_select2.next()){
+            ComboBox_1->addItem(qry_select2.value(0).toString());
+        }
+        db2.close();
+        ComboBox_1->show();
+    }else{
+        ComboBox_1->hide();
+        Label_2->hide();
+        Label_3->hide();
+    }
+    if (column != "new"){
+        db2.open();
+        QSqlQuery qry_select3(db2);
+        qry_select3.prepare("SELECT * FROM Tasks WHERE tname=?;");
+        qry_select3.addBindValue(item->text());
+        qry_select3.exec();
+        while(qry_select3.next()){
+            int i = ComboBox_1->findText(qry_select3.value(4).toString());
+            ComboBox_1->setCurrentIndex(i);
+
+        }
+        db2.close();
+    }
 
     QDialogButtonBox *buttonbox = new QDialogButtonBox(QDialogButtonBox::Save|QDialogButtonBox::Cancel);
     connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
@@ -208,9 +242,12 @@ QListWidgetItem Kanbanwindow::update_item(QListWidgetItem *item, QString column)
 
     if (dialog->exec() == QDialog::Accepted){
         if (column == "new"){
-            insert_sql(LineEdit_1->text(), TextEdit_1->toPlainText(), "BacklogList", projectName);
-        } else {
-            update_sql(item->text(), TextEdit_1->toPlainText(), column, projectName, LineEdit_1->text());
+            insert_sql(LineEdit_1->text(), TextEdit_1->toPlainText(), "BacklogList", projectName, ComboBox_1->currentText());
+        }else if(column == "issue"){
+            insert_Issues(LineEdit_1->text(), "", "no", projectName);
+        }
+        else {
+            update_sql(item->text(), TextEdit_1->toPlainText(), column, projectName, ComboBox_1->currentText(), LineEdit_1->text());
         }
         item->setText(LineEdit_1->text());
 
@@ -251,6 +288,7 @@ void Kanbanwindow::on_addTask_clicked()
     item->setText("");
     item->setText(update_item(item, "new").text());
     ui->BacklogList->addItem(item);
+    refresh_all();
 }
 
 void Kanbanwindow::refresh_all(){
@@ -302,11 +340,7 @@ void Kanbanwindow::on_saveButton_clicked()
 
 void Kanbanwindow::on_refreshButton_clicked()
 {
-    ui->BacklogList->clear();
-    ui->InProgressList->clear();
-    ui->InReviewList->clear();
-    ui->DoneList->clear();
-    select_sql();
+    refresh_all();
 }
 
 void Kanbanwindow::on_sprint1Button_clicked()
@@ -314,9 +348,12 @@ void Kanbanwindow::on_sprint1Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 1, projectName);
-    ui->sprint1List->addItem(item);
-    ui->BacklogList->addItem(item);
+    if(item->text() != ""){
+        insert_sprint(item->text(), 1, projectName);
+        ui->sprint1List->addItem(item);
+        ui->BacklogList->addItem(item);
+    }
+    refresh_all();
 }
 
 void Kanbanwindow::on_sprint2Button_clicked()
@@ -324,9 +361,12 @@ void Kanbanwindow::on_sprint2Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 2, projectName);
-    ui->sprint2List->addItem(item);
-    ui->BacklogList->addItem(item);
+    if(item->text() != ""){
+        insert_sprint(item->text(), 2, projectName);
+        ui->sprint2List->addItem(item);
+        ui->BacklogList->addItem(item);
+    }
+    refresh_all();
 }
 
 void Kanbanwindow::on_sprint3Button_clicked()
@@ -334,9 +374,12 @@ void Kanbanwindow::on_sprint3Button_clicked()
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
     item->setText(update_item(item, "new").text());
-    insert_sprint(item->text(), 3, projectName);
-    ui->sprint3List->addItem(item);
-    ui->BacklogList->addItem(item);
+    if(item->text() != ""){
+        insert_sprint(item->text(), 3, projectName);
+        ui->sprint3List->addItem(item);
+        ui->BacklogList->addItem(item);
+    }
+    refresh_all();
 }
 
 void Kanbanwindow::insert_sprint(QString tname, int snum, QString pname){
@@ -378,7 +421,7 @@ void Kanbanwindow::on_commentButton_clicked()
     QString old_comment;
     db2.open();
     QSqlQuery qry_select(db2);
-    qry_select.prepare("SELECT * FROM Issues WHERE tname=?;");
+    qry_select.prepare("SELECT * FROM Issues WHERE iname=?;");
     qry_select.addBindValue(ui->issueLabel->text());
     if (qry_select.exec()){
         while (qry_select.next()){
@@ -395,7 +438,7 @@ void Kanbanwindow::on_commentButton_clicked()
     db2.open();
     QSqlDatabase::database().transaction();
     QSqlQuery qry_update(db2);
-    qry_update.prepare("UPDATE Issues SET icomment=? WHERE tname=?");
+    qry_update.prepare("UPDATE Issues SET icomment=? WHERE iname=?");
     qry_update.addBindValue(new_comment);
     qry_update.addBindValue(ui->issueLabel->text());
     if (!qry_update.exec()){
@@ -413,7 +456,7 @@ void Kanbanwindow::on_newIssueList_itemDoubleClicked(QListWidgetItem *item)
     ui->issueLabel->setText(item->text());
     db2.open();
     QSqlQuery qry_select(db2);
-    qry_select.prepare("SELECT * FROM Issues WHERE tname=?");
+    qry_select.prepare("SELECT * FROM Issues WHERE iname=?");
     qry_select.addBindValue(item->text());
     if (qry_select.exec()){
         while (qry_select.next()){
@@ -428,7 +471,7 @@ void Kanbanwindow::on_completedIssueList_itemDoubleClicked(QListWidgetItem *item
     ui->issueLabel->setText(item->text());
     db2.open();
     QSqlQuery qry_select(db2);
-    qry_select.prepare("SELECT * FROM Issues WHERE tname=?");
+    qry_select.prepare("SELECT * FROM Issues WHERE iname=?");
     qry_select.addBindValue(item->text());
     if (qry_select.exec()){
         while (qry_select.next()){
@@ -442,10 +485,9 @@ void Kanbanwindow::on_addIssue_clicked()
 {
     QListWidgetItem *item = new QListWidgetItem();
     item->setText("");
-    item->setText(update_item(item, "new").text());
-    insert_Issues(item->text(), "", projectName, "no");
+    item->setText(update_item(item, "issue").text());
     ui->newIssueList->addItem(item);
-    ui->BacklogList->addItem(item);
+    refresh_all();
 }
 
 void Kanbanwindow::select_Issues(){
@@ -453,9 +495,9 @@ void Kanbanwindow::select_Issues(){
     QSqlQuery qry_select(db2);
     if (qry_select.exec("SELECT * FROM Issues WHERE pname=\'" + projectName + "\';")){
         while(qry_select.next()){
-            if (qry_select.value(3) == "yes"){
+            if (qry_select.value(2) == "yes"){
                 ui->completedIssueList->addItem(qry_select.value(0).toString());
-            } else if(qry_select.value(3) == "no"){
+            } else if(qry_select.value(2) == "no"){
                 ui->newIssueList->addItem(qry_select.value(0).toString());
             }
         }
@@ -464,15 +506,15 @@ void Kanbanwindow::select_Issues(){
     db2.close();
 }
 
-void Kanbanwindow::insert_Issues(QString tname, QString icomment, QString pname, QString icomplete){
+void Kanbanwindow::insert_Issues(QString iname, QString icomment, QString icomplete, QString pname){
     db2.open();
     QSqlDatabase::database().transaction();
     QSqlQuery qry_insert(db2);
-    qry_insert.prepare("INSERT INTO Issues (tname,icomment,pname,icomplete) VALUES (?,?,?,?)");
-    qry_insert.addBindValue(tname);
+    qry_insert.prepare("INSERT INTO Issues (iname,icomment,icomplete,pname) VALUES (?,?,?,?)");
+    qry_insert.addBindValue(iname);
     qry_insert.addBindValue(icomment);
-    qry_insert.addBindValue(pname);
     qry_insert.addBindValue(icomplete);
+    qry_insert.addBindValue(pname);
     if (!qry_insert.exec()){
         qDebug() << qry_insert.lastError();
     }
@@ -493,7 +535,7 @@ void Kanbanwindow::update_save_Issues(QString tname, QString icomplete){
     db2.open();
     QSqlDatabase::database().transaction();
     QSqlQuery qry_update(db2);
-    qry_update.prepare("UPDATE Issues SET icomplete=? WHERE tname=?");
+    qry_update.prepare("UPDATE Issues SET icomplete=? WHERE iname=?");
     qry_update.addBindValue(icomplete);
     qry_update.addBindValue(tname);
     if (!qry_update.exec()){
@@ -511,9 +553,7 @@ void Kanbanwindow::on_saveIssuesButton_clicked()
 
 void Kanbanwindow::on_refreshIssues_clicked()
 {
-    ui->newIssueList->clear();
-    ui->completedIssueList->clear();
-    select_Issues();
+    refresh_all();
 }
 
 
